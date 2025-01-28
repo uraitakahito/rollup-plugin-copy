@@ -43,6 +43,29 @@ async function generateCopyTarget(src, dest, { flatten, rename, transform }) {
   }
 }
 
+async function getMatchedPaths(target, restPluginOptions) {
+  if (!isObject(target)) {
+    throw new Error(`${stringify(target)} target must be an object`)
+  }
+
+  const { dest, rename, src, transform, ...restTargetOptions } = target
+
+  if (!src || !dest) {
+    throw new Error(`${stringify(target)} target must have "src" and "dest" properties`)
+  }
+
+  if (rename && typeof rename !== 'string' && typeof rename !== 'function') {
+    throw new Error(`${stringify(target)} target's "rename" property must be a string or a function`)
+  }
+
+  return globby(src, {
+    expandDirectories: false,
+    onlyFiles: false,
+    ...restPluginOptions,
+    ...restTargetOptions
+  })
+}
+
 export default function copy(options = {}) {
   const {
     copyOnce = false,
@@ -67,26 +90,17 @@ export default function copy(options = {}) {
 
         if (Array.isArray(targets) && targets.length) {
           for (const target of targets) {
-            if (!isObject(target)) {
-              throw new Error(`${stringify(target)} target must be an object`)
-            }
+            const matchedPaths = await getMatchedPaths(target, restPluginOptions)
 
-            const { dest, rename, src, transform, ...restTargetOptions } = target
-
-            const matchedPaths = await globby(src, {
-              expandDirectories: false,
-              onlyFiles: false,
-              ...restPluginOptions,
-              ...restTargetOptions
-            })
-
-            matchedPaths.forEach((matchedPath) => {
-              if (verbose) {
-                const message = green(`  ${bold(matchedPath)}`)
-                console.log(message)
+            if (matchedPaths.length) {
+              for (const matchedPath of matchedPaths) {
+                if (verbose) {
+                  const message = green(`  ${bold(matchedPath)}`)
+                  console.log(message)
+                }
+                this.addWatchFile(matchedPath)
               }
-              this.addWatchFile(matchedPath)
-            })
+            }
           }
         }
       }
@@ -100,28 +114,11 @@ export default function copy(options = {}) {
 
       if (Array.isArray(targets) && targets.length) {
         for (const target of targets) {
-          if (!isObject(target)) {
-            throw new Error(`${stringify(target)} target must be an object`)
-          }
-
-          const { dest, rename, src, transform, ...restTargetOptions } = target
-
-          if (!src || !dest) {
-            throw new Error(`${stringify(target)} target must have "src" and "dest" properties`)
-          }
-
-          if (rename && typeof rename !== 'string' && typeof rename !== 'function') {
-            throw new Error(`${stringify(target)} target's "rename" property must be a string or a function`)
-          }
-
-          const matchedPaths = await globby(src, {
-            expandDirectories: false,
-            onlyFiles: false,
-            ...restPluginOptions,
-            ...restTargetOptions
-          })
+          const matchedPaths = await getMatchedPaths(target, restPluginOptions)
 
           if (matchedPaths.length) {
+            // eslint-disable-next-line no-unused-vars
+            const { dest, rename, src, transform, ...restTargetOptions } = target
             for (const matchedPath of matchedPaths) {
               const generatedCopyTargets = Array.isArray(dest)
                 ? await Promise.all(dest.map((destination) => generateCopyTarget(
