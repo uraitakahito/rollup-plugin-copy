@@ -21,8 +21,8 @@ copy({
 
 ## Original Author
 
-[Cédric Meuter](https://github.com/meuter)
-[Vlad Shcherbin](https://github.com/vladshcherbin)
+- [Cédric Meuter](https://github.com/meuter)
+- [Vlad Shcherbin](https://github.com/vladshcherbin)
 
 ## License
 
