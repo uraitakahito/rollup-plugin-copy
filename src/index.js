@@ -80,6 +80,71 @@ export default function copy(options = {}) {
 
   let copied = false
 
+  async function processCopyTargets() {
+    if (copyOnce && copied) {
+      return
+    }
+
+    const copyTargets = []
+
+    if (Array.isArray(targets) && targets.length) {
+      for (const target of targets) {
+        const matchedPaths = await getMatchedPaths(target, restPluginOptions)
+
+        if (matchedPaths.length) {
+          // eslint-disable-next-line no-unused-vars
+          const { dest, rename, src, transform, ...restTargetOptions } = target
+          for (const matchedPath of matchedPaths) {
+            const generatedCopyTargets = Array.isArray(dest)
+              ? await Promise.all(dest.map((destination) => generateCopyTarget(
+                matchedPath,
+                destination,
+                { flatten, rename, transform }
+              )))
+              : [await generateCopyTarget(matchedPath, dest, { flatten, rename, transform })]
+
+            copyTargets.push(...generatedCopyTargets)
+          }
+        }
+      }
+    }
+
+    if (copyTargets.length) {
+      if (verbose) {
+        console.log(green('copied:'))
+      }
+
+      for (const copyTarget of copyTargets) {
+        const { contents, dest, src, transformed } = copyTarget
+
+        if (transformed) {
+          await fs.outputFile(dest, contents, restPluginOptions)
+        } else if (!copySync) {
+          await fs.copy(src, dest, restPluginOptions)
+        } else {
+          fs.copySync(src, dest, restPluginOptions)
+        }
+
+        if (verbose) {
+          let message = green(`  ${bold(src)} → ${bold(dest)}`)
+          const flags = Object.entries(copyTarget)
+            .filter(([key, value]) => ['renamed', 'transformed'].includes(key) && value)
+            .map(([key]) => key.charAt(0).toUpperCase())
+
+          if (flags.length) {
+            message = `${message} ${yellow(`[${flags.join(', ')}]`)}`
+          }
+
+          console.log(message)
+        }
+      }
+    } else if (verbose) {
+      console.log(yellow('no items to copy'))
+    }
+
+    copied = true
+  }
+
   return {
     name: 'copy',
     async buildStart() {
@@ -106,68 +171,7 @@ export default function copy(options = {}) {
       }
     },
     [hook]: async () => {
-      if (copyOnce && copied) {
-        return
-      }
-
-      const copyTargets = []
-
-      if (Array.isArray(targets) && targets.length) {
-        for (const target of targets) {
-          const matchedPaths = await getMatchedPaths(target, restPluginOptions)
-
-          if (matchedPaths.length) {
-            // eslint-disable-next-line no-unused-vars
-            const { dest, rename, src, transform, ...restTargetOptions } = target
-            for (const matchedPath of matchedPaths) {
-              const generatedCopyTargets = Array.isArray(dest)
-                ? await Promise.all(dest.map((destination) => generateCopyTarget(
-                  matchedPath,
-                  destination,
-                  { flatten, rename, transform }
-                )))
-                : [await generateCopyTarget(matchedPath, dest, { flatten, rename, transform })]
-
-              copyTargets.push(...generatedCopyTargets)
-            }
-          }
-        }
-      }
-
-      if (copyTargets.length) {
-        if (verbose) {
-          console.log(green('copied:'))
-        }
-
-        for (const copyTarget of copyTargets) {
-          const { contents, dest, src, transformed } = copyTarget
-
-          if (transformed) {
-            await fs.outputFile(dest, contents, restPluginOptions)
-          } else if (!copySync) {
-            await fs.copy(src, dest, restPluginOptions)
-          } else {
-            fs.copySync(src, dest, restPluginOptions)
-          }
-
-          if (verbose) {
-            let message = green(`  ${bold(src)} → ${bold(dest)}`)
-            const flags = Object.entries(copyTarget)
-              .filter(([key, value]) => ['renamed', 'transformed'].includes(key) && value)
-              .map(([key]) => key.charAt(0).toUpperCase())
-
-            if (flags.length) {
-              message = `${message} ${yellow(`[${flags.join(', ')}]`)}`
-            }
-
-            console.log(message)
-          }
-        }
-      } else if (verbose) {
-        console.log(yellow('no items to copy'))
-      }
-
-      copied = true
+      await processCopyTargets()
     }
   }
 }
