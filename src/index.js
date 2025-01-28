@@ -51,6 +51,7 @@ export default function copy(options = {}) {
     hook = 'buildEnd',
     targets = [],
     verbose = false,
+    watchTargets = false,
     ...restPluginOptions
   } = options
 
@@ -58,6 +59,38 @@ export default function copy(options = {}) {
 
   return {
     name: 'copy',
+    async buildStart() {
+      if (watchTargets) {
+        if (verbose) {
+          console.log(green('Extra watch targets:'))
+        }
+
+        if (Array.isArray(targets) && targets.length) {
+          for (const target of targets) {
+            if (!isObject(target)) {
+              throw new Error(`${stringify(target)} target must be an object`)
+            }
+
+            const { dest, rename, src, transform, ...restTargetOptions } = target
+
+            const matchedPaths = await globby(src, {
+              expandDirectories: false,
+              onlyFiles: false,
+              ...restPluginOptions,
+              ...restTargetOptions
+            })
+
+            matchedPaths.forEach((matchedPath) => {
+              if (verbose) {
+                const message = green(`  ${bold(matchedPath)}`)
+                console.log(message)
+              }
+              this.addWatchFile(matchedPath)
+            })
+          }
+        }
+      }
+    },
     [hook]: async () => {
       if (copyOnce && copied) {
         return
