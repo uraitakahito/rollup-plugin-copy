@@ -154,7 +154,7 @@ export default function copy(options = {}) {
     async buildStart() {
       if (watchTargets) {
         if (verbose) {
-          console.log(green('Extra watching targets:'))
+          console.log(green('extra watch targets:'))
         }
 
         if (Array.isArray(targets) && targets.length) {
