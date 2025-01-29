@@ -147,10 +147,13 @@ export default function copy(options = {}) {
 
   return {
     name: 'copy',
+    [hook]: async () => {
+      await processCopyTargets()
+    },
     async buildStart() {
       if (watchTargets) {
         if (verbose) {
-          console.log(green('Extra watch targets:'))
+          console.log(green('Extra watching targets:'))
         }
 
         if (Array.isArray(targets) && targets.length) {
@@ -169,9 +172,10 @@ export default function copy(options = {}) {
           }
         }
       }
-    },
-    [hook]: async () => {
-      await processCopyTargets()
+
+      if (hook === 'buildStart') {
+        await processCopyTargets()
+      }
     }
   }
 }

@@ -545,7 +545,7 @@ describe('Options', () => {
       to: 'blue'
     })
 
-    expect(console.log).toHaveBeenCalledWith(green('Extra watch targets:'))
+    expect(console.log).toHaveBeenCalledWith(green('Extra watching targets:'))
     expect(console.log).toHaveBeenCalledWith(`${green(`  ${bold('src/assets/css/css-1.css')}`)}`)
     expect(console.log).toHaveBeenCalledWith(`${green(`  ${bold('src/assets/css/css-2.css')}`)}`)
   })
