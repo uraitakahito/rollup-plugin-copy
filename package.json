@@ -1,7 +1,7 @@
 {
   "name": "@uraitakahito/rollup-plugin-copy",
   "description": "Watching targets, copy files and folders using Rollup. This is a variant of the rollup-plugin-copy. It is recommended to use the original plugin unless this variant is specifically needed.",
-  "version": "3.5.3",
+  "version": "3.5.4",
   "repository": "uraitakahito/rollup-plugin-copy",
   "main": "dist/index.commonjs.js",
   "module": "dist/index.module.js",
