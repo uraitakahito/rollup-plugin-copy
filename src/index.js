@@ -150,6 +150,7 @@ export default function copy(options = {}) {
     [hook]: async () => {
       await processCopyTargets()
     },
+    // overwrites the preceding `buildStart` function if `hook` parameter is `buildStart`
     async buildStart() {
       if (watchTargets) {
         if (verbose) {
