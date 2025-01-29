@@ -13,32 +13,25 @@ Type: `boolean` | Default: `false`
 Add the files specified in `targets` to the watch list
 
 ```js
-import copy from '@uraitakahito/rollup-plugin-copy';
-import { defineConfig } from 'rollup';
-const config = defineConfig(
-  [
-    {
-      input: 'src/main.js',
-      output: [
-        {
-          dir: 'dist',
-          format: 'es',
-          preserveModules: true,
-        },
+import copy from "@uraitakahito/rollup-plugin-copy";
+
+export default {
+  input: "src/main.js",
+  output: {
+    file: "dist/bundle.js",
+    format: "es",
+  },
+  plugins: [
+    copy({
+      targets: [
+        { src: "src/index.html", dest: "dist" },
+        { src: "src/image/**/*", dest: "dist/image" },
       ],
-      plugins: [
-        copy({
-          targets: [
-            { src: 'src/index.html', dest: 'dist' },
-          ],
-          verbose: true,
-          watchTargets: true,
-        }),
-      ],
-    },
-  ]
-);
-export default config;
+      verbose: true,
+      watchTargets: true,
+    }),
+  ],
+};
 ```
 
 And run:
@@ -46,6 +39,8 @@ And run:
 ```console
 % rollup --config --watch
 ```
+
+A sample repository can be found [here](https://github.com/uraitakahito/hello-my-rollup-plugin-copy).
 
 ## Original Author
 
