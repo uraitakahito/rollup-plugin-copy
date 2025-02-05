@@ -2,9 +2,7 @@
 
 Copy files and folders, with glob support.
 
-This is a variant of rollup-plugin-copy.
-
-Original `rollup-plugin-copy` is [here](https://github.com/vladshcherbin/rollup-plugin-copy).
+This is a variant of `rollup-plugin-copy`.
 
 The following changes have been made:
 
@@ -12,7 +10,9 @@ The following changes have been made:
 - Only changes in `input` and `targets`' `src` are detected. In other words, `targets`' `dest` is not monitored.
 - This feature is off by default. When off, it is compatible with the original.
 
-I plan to create a pull request to the original repository soon.
+Original `rollup-plugin-copy` is [here](https://github.com/vladshcherbin/rollup-plugin-copy).
+
+Original `rollup-plugin-copy` pull request is [here](https://github.com/vladshcherbin/rollup-plugin-copy/pull/82).
 
 ## Usage
 
